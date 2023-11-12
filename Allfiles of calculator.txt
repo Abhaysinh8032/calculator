@@ -1,0 +1,256 @@
+App.js
+import React from 'react';
+import Calculator from './Calculator';
+import './App.css';
+
+const App = () => {
+  return (
+    <div className="app">
+      <h1>Calculator</h1>
+      <Calculator />
+    </div>
+  );
+};
+
+export default App;
+
+
+
+
+
+
+Calculator.js
+import React, { useState } from 'react';
+
+const Calculator = () => {
+  const [displayValue, setDisplayValue] = useState('0');
+  const [firstOperand, setFirstOperand] = useState(null);
+  const [operator, setOperator] = useState(null);
+  const [waitingForSecondOperand, setWaitingForSecondOperand] = useState(false);
+  const [currentOperation, setCurrentOperation] = useState('');
+  const [previousOperations, setPreviousOperations] = useState([]);
+
+  
+  const handleDigitInput = (digit) => {
+    
+    if (waitingForSecondOperand) {
+      
+      setDisplayValue(String(digit));
+      setWaitingForSecondOperand(false);
+    } else {
+      setDisplayValue(displayValue === '0' ? String(digit) : displayValue + digit);
+    }
+  };
+
+  const handleDecimalInput = () => {
+    if (!displayValue.includes('.')) {
+      setDisplayValue(displayValue + '.');
+    }
+  };
+
+  const handleOperatorInput = (nextOperator) => {
+    const inputValue = parseFloat(displayValue);
+
+    if (firstOperand === null) {
+      setFirstOperand(inputValue);
+    } else if (operator) {
+      const result = performCalculation();
+      setDisplayValue(String(result));
+      setFirstOperand(result);
+    }
+
+    setWaitingForSecondOperand(true);
+    setOperator(nextOperator);
+    setCurrentOperation(`${inputValue} ${nextOperator}`);
+  };
+
+  const performCalculation = () => {
+    const inputValue = parseFloat(displayValue);
+
+    if (operator === '+') {
+      return firstOperand + inputValue;
+    } else if (operator === '-') {
+      return firstOperand - inputValue;
+    } else if (operator === '*') {
+      return firstOperand * inputValue;
+    } else if (operator === '/') {
+      return firstOperand / inputValue;
+    }
+    //  else if (operator === '%') {
+    //   return (inputValue / 100);
+      
+    // }
+
+    return inputValue;
+  };
+
+  const handlePercentage = () => {
+    const inputValue = parseFloat(displayValue);
+    const result = inputValue / 100;
+    setDisplayValue(String(result));
+    setFirstOperand(result);
+    setOperator(null);
+    setWaitingForSecondOperand(true);
+    setCurrentOperation(`${result}`);
+    setPreviousOperations(prev => [...prev, `${currentOperation}${displayValue} % = ${result}`]);
+  };
+
+  const handleEquals = () => {
+    if (!operator) return;
+
+    const result = performCalculation();
+    setDisplayValue(String(result));
+    setFirstOperand(null);
+    setOperator(null);
+    setWaitingForSecondOperand(false);
+    setCurrentOperation('');
+    setPreviousOperations(prev => [...prev, `${currentOperation} ${displayValue} = ${result}`]);
+  };
+
+  const handleClear = () => {
+    setDisplayValue('0');
+    setFirstOperand(null);
+    setOperator(null);
+    setWaitingForSecondOperand(false);
+    setCurrentOperation('');
+    setPreviousOperations([]);
+  };
+
+  const handleToggleSign = () => {
+    const value = parseFloat(displayValue);
+    setDisplayValue(String(-value));
+  };
+
+  const handleDelete = () => {
+    if (displayValue.length === 1) {
+      setDisplayValue('0');
+    } else {
+      setDisplayValue(displayValue.slice(0, -1));
+    }
+  };
+
+  return (
+    <div className="calculator">
+      <div className="calculator-log">
+        {previousOperations.map((operation, index) => (
+          <div key={index}>{operation}</div>
+        ))}
+      </div>
+      <div className="calculator-display">{currentOperation}</div>
+      <div className="calculator-display">{displayValue}</div>
+      <div className="calculator-buttons">
+      <button onClick={handleClear}id="clr">C</button>
+        <button onClick={handleToggleSign}>+|-</button>
+        <button onClick={() => handlePercentage('%')}>%</button>
+        <button onClick={() => handleOperatorInput('/')}>/</button>
+        <button onClick={() => handleDigitInput(7)}>7</button>
+        <button onClick={() => handleDigitInput(8)}>8</button>
+        <button onClick={() => handleDigitInput(9)}>9</button>
+        <button onClick={() => handleOperatorInput('*')}>*</button>
+        <button onClick={() => handleDigitInput(4)}>4</button>
+        <button onClick={() => handleDigitInput(5)}>5</button>
+        <button onClick={() => handleDigitInput(6)}>6</button>
+        <button onClick={() => handleOperatorInput('-')}>-</button>
+        <button onClick={() => handleDigitInput(1)}>1</button>
+        <button onClick={() => handleDigitInput(2)}>2</button>
+        <button onClick={() => handleDigitInput(3)}>3</button>
+        <button onClick={() => handleOperatorInput('+')}>+</button>
+        <button onClick={handleDecimalInput}>.</button>
+        <button onClick={() => handleDigitInput(0)}>0</button>
+        <button onClick={handleEquals} id="ans">=</button>        
+        <button onClick={handleDelete} id="del">DEL</button>
+      </div>
+    </div>
+  );
+};
+
+export default Calculator;
+
+
+
+App.css
+*{background-color: lightblue;}
+.app {
+  text-align: center;
+  margin-top: 50px;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+.calculator {
+  width: 250px;
+  margin: 0 auto;
+  border: 1px solid #ccccccd6;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  
+}
+
+.calculator-display {
+  font-size: 18px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding: 8px;
+  text-align: right;
+  background-color: #fff;
+}
+
+.calculator-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 5px;
+}
+
+.calculator-buttons button {
+  font-size: 16px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+}
+
+.calculator-buttons button:hover {
+  background-color: #d2d2d2;
+}
+
+.calculator-buttons button:active {
+  background-color: #bfbfbf;
+}
+
+.calculator-log {
+  margin-top: 10px;
+  padding: 5px;
+  background-color: #f5f5f571;
+  border: 1px solid #2a0452;
+  border-radius: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+  border-color:black;
+  
+}
+
+.calculator-log div {
+  margin-bottom: 5px;
+}
+#ans{
+  background-color:rgb(60, 255, 60);
+}
+#clr{
+  background-color:rgb(255, 179, 0);
+}
+#del{
+  background-color:rgb(209, 6, 6);
+}
+#ans:hover{
+  background-color:rgb(54, 111, 243);
+}
+#clr:hover{
+  background-color:rgb(203, 77, 14);
+}
+#del:hover{
+  background-color:rgb(204, 39, 190);
+}
